@@ -1,15 +1,8 @@
 import { useEffect, useState } from 'react'
 import { supabase } from './supabaseClient'
+import { todayString } from './date'
 
-function todayString() {
-  const now = new Date()
-  const y = now.getFullYear()
-  const m = String(now.getMonth() + 1).padStart(2, '0')
-  const d = String(now.getDate()).padStart(2, '0')
-  return `${y}-${m}-${d}`
-}
-
-function Home() {
+function Home({ onAddWalk }) {
   const [walks, setWalks] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -62,6 +55,9 @@ function Home() {
           ))}
         </ul>
       )}
+      <button type="button" className="add-walk-button" onClick={onAddWalk}>
+        Add walk
+      </button>
     </div>
   )
 }
