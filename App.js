@@ -4,6 +4,7 @@ import { StyleSheet, View } from 'react-native'
 import NicknameEntry from './screens/NicknameEntry'
 import Home from './screens/Home'
 import AddWalk from './screens/AddWalk'
+import History from './screens/History'
 import { getStoredUser, setStoredUser } from './lib/storage'
 
 export default function App() {
@@ -45,13 +46,19 @@ export default function App() {
   return (
     <View style={styles.container}>
       {view === 'home' ? (
-        <Home key={refreshKey} onAddWalk={() => setView('add')} />
-      ) : (
+        <Home
+          key={refreshKey}
+          onAddWalk={() => setView('add')}
+          onHistory={() => setView('history')}
+        />
+      ) : view === 'add' ? (
         <AddWalk
           user={user}
           onSaved={handleWalkSaved}
           onCancel={() => setView('home')}
         />
+      ) : (
+        <History user={user} onBack={() => setView('home')} />
       )}
       <StatusBar style="auto" />
     </View>

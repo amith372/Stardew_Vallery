@@ -22,6 +22,7 @@ alter table walks enable row level security;
 
 create policy "anyone can read users" on users for select using (true);
 create policy "anyone can add users" on users for insert with check (true);
+create policy "anyone can update users" on users for update using (true);
 
 create policy "anyone can read walks" on walks for select using (true);
 create policy "anyone can add walks" on walks for insert with check (true);

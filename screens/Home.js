@@ -3,7 +3,7 @@ import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native'
 import { supabase } from '../lib/supabaseClient'
 import { todayString } from '../lib/date'
 
-export default function Home({ onAddWalk }) {
+export default function Home({ onAddWalk, onHistory }) {
   const [walks, setWalks] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -62,9 +62,14 @@ export default function Home({ onAddWalk }) {
         />
       )}
 
-      <Pressable style={styles.addButton} onPress={onAddWalk}>
-        <Text style={styles.addButtonText}>הוספת טיול</Text>
-      </Pressable>
+      <View style={styles.buttonRow}>
+        <Pressable style={styles.historyButton} onPress={onHistory}>
+          <Text style={styles.historyButtonText}>היסטוריה</Text>
+        </Pressable>
+        <Pressable style={styles.addButton} onPress={onAddWalk}>
+          <Text style={styles.addButtonText}>הוספת טיול</Text>
+        </Pressable>
+      </View>
     </View>
   )
 }
@@ -115,9 +120,13 @@ const styles = StyleSheet.create({
   flags: {
     fontSize: 18,
   },
-  addButton: {
+  buttonRow: {
+    flexDirection: 'row-reverse',
+    justifyContent: 'center',
+    gap: 12,
     marginTop: 20,
-    alignSelf: 'center',
+  },
+  addButton: {
     backgroundColor: '#aa3bff',
     paddingVertical: 10,
     paddingHorizontal: 24,
@@ -125,6 +134,17 @@ const styles = StyleSheet.create({
   },
   addButtonText: {
     color: '#fff',
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  historyButton: {
+    backgroundColor: '#f4f3ec',
+    paddingVertical: 10,
+    paddingHorizontal: 24,
+    borderRadius: 6,
+  },
+  historyButtonText: {
+    color: '#333',
     fontSize: 16,
     fontWeight: '500',
   },
