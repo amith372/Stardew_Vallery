@@ -1,8 +1,8 @@
 import { useState } from 'react'
-import { StyleSheet, Switch, Text, TextInput, View } from 'react-native'
+import { Alert, Pressable, StyleSheet, Switch, Text, TextInput, View } from 'react-native'
 import { supabase } from '../lib/supabaseClient'
 
-export default function WalkRow({ walk, isOwn, onUpdated }) {
+export default function WalkRow({ walk, isOwn, onUpdated, onDeleted }) {
   const [note, setNote] = useState(walk.note ?? '')
 
   async function updateField(field, value) {
@@ -17,6 +17,20 @@ export default function WalkRow({ walk, isOwn, onUpdated }) {
     }
   }
 
+  function handleDelete() {
+    Alert.alert('מחיקת טיול?', 'לא ניתן לבטל פעולה זו.', [
+      { text: 'ביטול', style: 'cancel' },
+      {
+        text: 'מחיקה',
+        style: 'destructive',
+        onPress: async () => {
+          onDeleted(walk.id)
+          await supabase.from('walks').delete().eq('id', walk.id)
+        },
+      },
+    ])
+  }
+
   return (
     <View style={styles.card}>
       <View style={styles.row}>
@@ -27,14 +41,19 @@ export default function WalkRow({ walk, isOwn, onUpdated }) {
           <Text style={styles.time}>{walk.walk_time.slice(0, 5)}</Text>
         </View>
         {isOwn ? (
-          <View style={styles.switchGroup}>
-            <View style={styles.switchItem}>
-              <Switch value={walk.peed} onValueChange={(v) => updateField('peed', v)} />
-              <Text style={styles.switchLabel}>💦 פיפי</Text>
-            </View>
-            <View style={styles.switchItem}>
-              <Switch value={walk.pooped} onValueChange={(v) => updateField('pooped', v)} />
-              <Text style={styles.switchLabel}>💩 קקי</Text>
+          <View style={styles.trailGroup}>
+            <Pressable style={styles.deleteButton} onPress={handleDelete}>
+              <Text style={styles.deleteButtonText}>🗑️</Text>
+            </Pressable>
+            <View style={styles.switchGroup}>
+              <View style={styles.switchItem}>
+                <Switch value={walk.peed} onValueChange={(v) => updateField('peed', v)} />
+                <Text style={styles.switchLabel}>💦 פיפי</Text>
+              </View>
+              <View style={styles.switchItem}>
+                <Switch value={walk.pooped} onValueChange={(v) => updateField('pooped', v)} />
+                <Text style={styles.switchLabel}>💩 קקי</Text>
+              </View>
             </View>
           </View>
         ) : (
@@ -102,6 +121,17 @@ const styles = StyleSheet.create({
   },
   flags: {
     fontSize: 18,
+  },
+  trailGroup: {
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    gap: 10,
+  },
+  deleteButton: {
+    padding: 4,
+  },
+  deleteButtonText: {
+    fontSize: 16,
   },
   switchGroup: {
     flexDirection: 'row-reverse',

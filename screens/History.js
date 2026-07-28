@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Pressable, SectionList, StyleSheet, Text, View } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { supabase } from '../lib/supabaseClient'
 import { todayString, formatDateForDisplay } from '../lib/date'
 import WalkRow from '../components/WalkRow'
@@ -18,6 +19,7 @@ function groupByDate(rows) {
 }
 
 export default function History({ user, onBack }) {
+  const insets = useSafeAreaInsets()
   const [sections, setSections] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -59,8 +61,24 @@ export default function History({ user, onBack }) {
     )
   }
 
+  function handleRowDeleted(id) {
+    setSections((prev) =>
+      prev
+        .map((section) => ({
+          ...section,
+          data: section.data.filter((w) => w.id !== id),
+        }))
+        .filter((section) => section.data.length > 0)
+    )
+  }
+
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        { paddingTop: insets.top + 20, paddingBottom: insets.bottom + 20 },
+      ]}
+    >
       <View style={styles.header}>
         <Text style={styles.title}>📜 היסטוריה</Text>
         <Pressable onPress={onBack}>
@@ -87,6 +105,7 @@ export default function History({ user, onBack }) {
               walk={item}
               isOwn={item.user_id === user.id}
               onUpdated={handleRowUpdated}
+              onDeleted={handleRowDeleted}
             />
           )}
         />
@@ -98,8 +117,7 @@ export default function History({ user, onBack }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
-    paddingTop: 60,
+    paddingHorizontal: 20,
     backgroundColor: '#fbf9ff',
   },
   header: {

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Pressable, StyleSheet, Switch, Text, TextInput, View } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { DateTimePickerAndroid } from '@react-native-community/datetimepicker'
 import { supabase } from '../lib/supabaseClient'
 import { todayString } from '../lib/date'
@@ -11,6 +12,7 @@ function timeToString(date) {
 }
 
 export default function AddWalk({ user, onSaved, onCancel }) {
+  const insets = useSafeAreaInsets()
   const [time, setTime] = useState(new Date())
   const [pooped, setPooped] = useState(false)
   const [peed, setPeed] = useState(false)
@@ -53,7 +55,12 @@ export default function AddWalk({ user, onSaved, onCancel }) {
   }
 
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        { paddingTop: insets.top + 20, paddingBottom: insets.bottom + 20 },
+      ]}
+    >
       <Text style={styles.title}>🐕 הוספת טיול</Text>
 
       <Text style={styles.label}>🕐 שעה</Text>
@@ -109,8 +116,7 @@ export default function AddWalk({ user, onSaved, onCancel }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
-    paddingTop: 60,
+    paddingHorizontal: 20,
     alignItems: 'flex-end',
     backgroundColor: '#fbf9ff',
   },

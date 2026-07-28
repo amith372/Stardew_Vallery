@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { StatusBar } from 'expo-status-bar'
 import { StyleSheet, View } from 'react-native'
+import { SafeAreaProvider } from 'react-native-safe-area-context'
 import NicknameEntry from './screens/NicknameEntry'
 import Home from './screens/Home'
 import AddWalk from './screens/AddWalk'
@@ -31,38 +32,46 @@ export default function App() {
   }
 
   if (loading) {
-    return <View style={styles.container} />
+    return (
+      <SafeAreaProvider>
+        <View style={styles.container} />
+      </SafeAreaProvider>
+    )
   }
 
   if (!user) {
     return (
-      <View style={styles.container}>
-        <NicknameEntry onSaved={handleSaved} />
-        <StatusBar style="auto" />
-      </View>
+      <SafeAreaProvider>
+        <View style={styles.container}>
+          <NicknameEntry onSaved={handleSaved} />
+          <StatusBar style="auto" />
+        </View>
+      </SafeAreaProvider>
     )
   }
 
   return (
-    <View style={styles.container}>
-      {view === 'home' ? (
-        <Home
-          key={refreshKey}
-          user={user}
-          onAddWalk={() => setView('add')}
-          onHistory={() => setView('history')}
-        />
-      ) : view === 'add' ? (
-        <AddWalk
-          user={user}
-          onSaved={handleWalkSaved}
-          onCancel={() => setView('home')}
-        />
-      ) : (
-        <History user={user} onBack={() => setView('home')} />
-      )}
-      <StatusBar style="auto" />
-    </View>
+    <SafeAreaProvider>
+      <View style={styles.container}>
+        {view === 'home' ? (
+          <Home
+            key={refreshKey}
+            user={user}
+            onAddWalk={() => setView('add')}
+            onHistory={() => setView('history')}
+          />
+        ) : view === 'add' ? (
+          <AddWalk
+            user={user}
+            onSaved={handleWalkSaved}
+            onCancel={() => setView('home')}
+          />
+        ) : (
+          <History user={user} onBack={() => setView('home')} />
+        )}
+        <StatusBar style="auto" />
+      </View>
+    </SafeAreaProvider>
   )
 }
 

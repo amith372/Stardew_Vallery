@@ -30,7 +30,8 @@ A "user" is just a nickname saved on first launch. No auth, no passwords.
 3. Add walk: pick time, toggle pooped / peed, optional note, save.
 4. History: browse past days. Anyone can view all days; the person who
    originally logged a walk can edit that entry's pooped/peed toggles and
-   note anytime (on Home for today's walks, and in History for past days).
+   note anytime (on Home for today's walks, and in History for past days),
+   and delete that entry entirely (with a confirmation prompt).
 
 ## Stack
 - Front end: React Native (Expo), UI in Hebrew with RTL layout

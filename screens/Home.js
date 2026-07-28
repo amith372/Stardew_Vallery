@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { supabase } from '../lib/supabaseClient'
 import { todayString, toDateTime, formatHebrewDate } from '../lib/date'
 import WalkRow from '../components/WalkRow'
@@ -21,6 +22,7 @@ function getStatus(lastWalkAt, now) {
 }
 
 export default function Home({ user, onAddWalk, onHistory }) {
+  const insets = useSafeAreaInsets()
   const [walks, setWalks] = useState([])
   const [lastWalkAt, setLastWalkAt] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -81,8 +83,17 @@ export default function Home({ user, onAddWalk, onHistory }) {
     setWalks((prev) => prev.map((w) => (w.id === id ? { ...w, [field]: value } : w)))
   }
 
+  function handleRowDeleted(id) {
+    setWalks((prev) => prev.filter((w) => w.id !== id))
+  }
+
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        { paddingTop: insets.top + 20, paddingBottom: insets.bottom + 20 },
+      ]}
+    >
       <View style={styles.headerCard}>
         <View style={styles.headerTextGroup}>
           <Text style={styles.title}>הטיולים של היום</Text>
@@ -116,6 +127,7 @@ export default function Home({ user, onAddWalk, onHistory }) {
               walk={item}
               isOwn={item.user_id === user.id}
               onUpdated={handleRowUpdated}
+              onDeleted={handleRowDeleted}
             />
           )}
         />
@@ -136,8 +148,7 @@ export default function Home({ user, onAddWalk, onHistory }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
-    paddingTop: 60,
+    paddingHorizontal: 20,
     backgroundColor: '#fbf9ff',
   },
   headerCard: {
