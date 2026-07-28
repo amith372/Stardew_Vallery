@@ -32,13 +32,15 @@ export default function NicknameEntry({ onSaved }) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>ברוכים הבאים</Text>
+      <Text style={styles.emoji}>🐶</Text>
+      <Text style={styles.title}>ברוכים הבאים 👋</Text>
       <Text style={styles.subtitle}>מה הכינוי שלכם?</Text>
       <TextInput
         style={styles.input}
         value={nickname}
         onChangeText={setNickname}
         placeholder="כינוי"
+        placeholderTextColor="#aaa"
         textAlign="right"
         autoFocus
       />
@@ -47,7 +49,7 @@ export default function NicknameEntry({ onSaved }) {
         onPress={handleSave}
         disabled={saving || !nickname.trim()}
       >
-        <Text style={styles.buttonText}>{saving ? 'שומר…' : 'שמירה'}</Text>
+        <Text style={styles.buttonText}>{saving ? 'שומר…' : '✅ שמירה'}</Text>
       </Pressable>
       {error ? <Text style={styles.error}>{error}</Text> : null}
     </View>
@@ -61,12 +63,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 20,
     gap: 12,
+    backgroundColor: '#fbf9ff',
+  },
+  emoji: {
+    fontSize: 56,
+    marginBottom: 8,
   },
   title: {
     fontSize: 28,
-    fontWeight: '600',
+    fontWeight: '700',
     textAlign: 'right',
     writingDirection: 'rtl',
+    color: '#2d1b4e',
   },
   subtitle: {
     fontSize: 16,
@@ -78,25 +86,33 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: 260,
     fontSize: 16,
-    padding: 10,
-    borderRadius: 6,
+    padding: 12,
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: '#ddd',
+    backgroundColor: '#fff',
     writingDirection: 'rtl',
   },
   button: {
     backgroundColor: '#aa3bff',
-    paddingVertical: 10,
+    paddingVertical: 12,
     paddingHorizontal: 24,
-    borderRadius: 6,
+    borderRadius: 24,
+    shadowColor: '#aa3bff',
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 3,
   },
   buttonDisabled: {
     opacity: 0.6,
+    shadowOpacity: 0,
+    elevation: 0,
   },
   buttonText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: '600',
   },
   error: {
     color: '#d33',

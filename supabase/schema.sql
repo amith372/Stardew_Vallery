@@ -13,6 +13,7 @@ create table walks (
   walk_time time not null,
   pooped boolean not null default false,
   peed boolean not null default false,
+  note text,
   created_at timestamptz not null default now()
 );
 

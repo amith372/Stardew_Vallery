@@ -20,15 +20,17 @@ today's walks.
 - Ask before adding any new dependency.
 
 ## Data model
-A "walk" has: user (nickname), date, time, pooped (yes/no), peed (yes/no).
+A "walk" has: user (nickname), date, time, pooped (yes/no), peed (yes/no), optional note.
 A "user" is just a nickname saved on first launch. No auth, no passwords.
 
 ## Screens
 1. First launch: ask for nickname, save it.
-2. Home: today's walks (shown first on open).
-3. Add walk: pick time, toggle pooped / peed, save.
+2. Home: today's walks (shown first on open). A status banner shows how
+   overdue the dog's next walk is, based on time since the last logged walk.
+3. Add walk: pick time, toggle pooped / peed, optional note, save.
 4. History: browse past days. Anyone can view all days; the person who
-   originally logged a walk can also edit that entry's pooped/peed toggles.
+   originally logged a walk can edit that entry's pooped/peed toggles and
+   note anytime (on Home for today's walks, and in History for past days).
 
 ## Stack
 - Front end: React Native (Expo), UI in Hebrew with RTL layout

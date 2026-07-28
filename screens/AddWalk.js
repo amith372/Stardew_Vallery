@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Pressable, StyleSheet, Switch, Text, View } from 'react-native'
+import { Pressable, StyleSheet, Switch, Text, TextInput, View } from 'react-native'
 import { DateTimePickerAndroid } from '@react-native-community/datetimepicker'
 import { supabase } from '../lib/supabaseClient'
 import { todayString } from '../lib/date'
@@ -14,6 +14,7 @@ export default function AddWalk({ user, onSaved, onCancel }) {
   const [time, setTime] = useState(new Date())
   const [pooped, setPooped] = useState(false)
   const [peed, setPeed] = useState(false)
+  const [note, setNote] = useState('')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
 
@@ -38,6 +39,7 @@ export default function AddWalk({ user, onSaved, onCancel }) {
       walk_time: timeToString(time),
       pooped,
       peed,
+      note: note.trim() || null,
     })
 
     setSaving(false)
@@ -52,22 +54,35 @@ export default function AddWalk({ user, onSaved, onCancel }) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>הוספת טיול</Text>
+      <Text style={styles.title}>🐕 הוספת טיול</Text>
 
-      <Text style={styles.label}>שעה</Text>
+      <Text style={styles.label}>🕐 שעה</Text>
       <Pressable style={styles.timeButton} onPress={openTimePicker}>
         <Text style={styles.timeButtonText}>{timeToString(time)}</Text>
       </Pressable>
 
-      <View style={styles.toggleRow}>
-        <Switch value={pooped} onValueChange={setPooped} />
-        <Text style={styles.toggleLabel}>עשתה קקי</Text>
+      <View style={styles.toggleCard}>
+        <View style={styles.toggleRow}>
+          <Switch value={pooped} onValueChange={setPooped} />
+          <Text style={styles.toggleLabel}>💩 עשתה קקי</Text>
+        </View>
+
+        <View style={styles.toggleRow}>
+          <Switch value={peed} onValueChange={setPeed} />
+          <Text style={styles.toggleLabel}>💦 עשתה פיפי</Text>
+        </View>
       </View>
 
-      <View style={styles.toggleRow}>
-        <Switch value={peed} onValueChange={setPeed} />
-        <Text style={styles.toggleLabel}>עשתה פיפי</Text>
-      </View>
+      <Text style={styles.label}>📝 הערה (אופציונלי)</Text>
+      <TextInput
+        style={styles.noteInput}
+        value={note}
+        onChangeText={setNote}
+        placeholder="הוסיפו הערה…"
+        placeholderTextColor="#aaa"
+        textAlign="right"
+        multiline
+      />
 
       <View style={styles.buttonRow}>
         <Pressable
@@ -82,7 +97,7 @@ export default function AddWalk({ user, onSaved, onCancel }) {
           onPress={handleSave}
           disabled={saving}
         >
-          <Text style={styles.saveButtonText}>{saving ? 'שומר…' : 'שמירה'}</Text>
+          <Text style={styles.saveButtonText}>{saving ? 'שומר…' : '✅ שמירה'}</Text>
         </Pressable>
       </View>
 
@@ -97,14 +112,16 @@ const styles = StyleSheet.create({
     padding: 20,
     paddingTop: 60,
     alignItems: 'flex-end',
+    backgroundColor: '#fbf9ff',
   },
   title: {
     fontSize: 28,
-    fontWeight: '600',
+    fontWeight: '700',
     textAlign: 'right',
     writingDirection: 'rtl',
-    marginBottom: 16,
+    marginBottom: 20,
     alignSelf: 'stretch',
+    color: '#2d1b4e',
   },
   label: {
     fontSize: 16,
@@ -112,26 +129,52 @@ const styles = StyleSheet.create({
     textAlign: 'right',
     writingDirection: 'rtl',
     alignSelf: 'stretch',
+    marginTop: 20,
     marginBottom: 4,
+  },
+  noteInput: {
+    alignSelf: 'stretch',
+    minHeight: 60,
+    fontSize: 16,
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    backgroundColor: '#fff',
+    writingDirection: 'rtl',
+    textAlignVertical: 'top',
   },
   timeButton: {
     alignSelf: 'stretch',
     borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 6,
-    paddingVertical: 10,
+    borderColor: '#ddd',
+    borderRadius: 12,
+    paddingVertical: 12,
     paddingHorizontal: 14,
+    backgroundColor: '#fff',
   },
   timeButtonText: {
     fontSize: 18,
     fontVariant: ['tabular-nums'],
     textAlign: 'right',
   },
+  toggleCard: {
+    alignSelf: 'stretch',
+    backgroundColor: '#fff',
+    borderRadius: 14,
+    padding: 16,
+    marginTop: 20,
+    gap: 16,
+    shadowColor: '#3a2a5c',
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
+  },
   toggleRow: {
     flexDirection: 'row-reverse',
     alignItems: 'center',
     gap: 10,
-    marginTop: 16,
   },
   toggleLabel: {
     fontSize: 16,
@@ -143,28 +186,35 @@ const styles = StyleSheet.create({
     marginTop: 24,
   },
   button: {
-    paddingVertical: 10,
+    paddingVertical: 12,
     paddingHorizontal: 24,
-    borderRadius: 6,
+    borderRadius: 24,
   },
   saveButton: {
     backgroundColor: '#aa3bff',
+    shadowColor: '#aa3bff',
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 3,
   },
   cancelButton: {
-    backgroundColor: '#f4f3ec',
+    backgroundColor: '#f0ecf9',
   },
   buttonDisabled: {
     opacity: 0.6,
+    shadowOpacity: 0,
+    elevation: 0,
   },
   saveButtonText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: '600',
   },
   cancelButtonText: {
-    color: '#333',
+    color: '#5a3d8a',
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: '600',
   },
   error: {
     marginTop: 12,

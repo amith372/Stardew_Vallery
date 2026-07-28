@@ -48,6 +48,7 @@ export default function App() {
       {view === 'home' ? (
         <Home
           key={refreshKey}
+          user={user}
           onAddWalk={() => setView('add')}
           onHistory={() => setView('history')}
         />
@@ -68,6 +69,6 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#fbf9ff',
   },
 })

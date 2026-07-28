@@ -1,12 +1,36 @@
 import { useEffect, useState } from 'react'
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native'
 import { supabase } from '../lib/supabaseClient'
-import { todayString } from '../lib/date'
+import { todayString, toDateTime, formatHebrewDate } from '../lib/date'
+import WalkRow from '../components/WalkRow'
 
-export default function Home({ onAddWalk, onHistory }) {
+const STATUS_CHECK_INTERVAL = 60 * 1000
+
+function getStatus(lastWalkAt, now) {
+  if (!lastWalkAt) {
+    return { emoji: '🚨', text: 'היא צריכה טיול', tone: 'urgent' }
+  }
+  const hoursSince = (now - lastWalkAt) / (1000 * 60 * 60)
+  if (hoursSince < 5) {
+    return { emoji: '😌', text: 'היא בסדר', tone: 'ok' }
+  }
+  if (hoursSince < 6) {
+    return { emoji: '🥱', text: 'היא תשמח לטיול', tone: 'soon' }
+  }
+  return { emoji: '🚨', text: 'היא צריכה טיול', tone: 'urgent' }
+}
+
+export default function Home({ user, onAddWalk, onHistory }) {
   const [walks, setWalks] = useState([])
+  const [lastWalkAt, setLastWalkAt] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [now, setNow] = useState(() => new Date())
+
+  useEffect(() => {
+    const interval = setInterval(() => setNow(new Date()), STATUS_CHECK_INTERVAL)
+    return () => clearInterval(interval)
+  }, [])
 
   useEffect(() => {
     let cancelled = false
@@ -14,18 +38,34 @@ export default function Home({ onAddWalk, onHistory }) {
     async function loadWalks() {
       setLoading(true)
       setError('')
-      const { data, error } = await supabase
-        .from('walks')
-        .select('id, walk_time, pooped, peed, users(nickname)')
-        .eq('walk_date', todayString())
-        .order('walk_time')
+
+      const [todayRes, lastWalkRes] = await Promise.all([
+        supabase
+          .from('walks')
+          .select('id, walk_time, pooped, peed, note, user_id, users(nickname)')
+          .eq('walk_date', todayString())
+          .order('walk_time'),
+        supabase
+          .from('walks')
+          .select('walk_date, walk_time')
+          .order('walk_date', { ascending: false })
+          .order('walk_time', { ascending: false })
+          .limit(1)
+          .maybeSingle(),
+      ])
 
       if (cancelled) return
-      if (error) {
+
+      if (todayRes.error) {
         setError('לא ניתן היה לטעון את הטיולים של היום.')
       } else {
-        setWalks(data)
+        setWalks(todayRes.data)
       }
+
+      if (lastWalkRes.data) {
+        setLastWalkAt(toDateTime(lastWalkRes.data.walk_date, lastWalkRes.data.walk_time))
+      }
+
       setLoading(false)
     }
 
@@ -35,9 +75,30 @@ export default function Home({ onAddWalk, onHistory }) {
     }
   }, [])
 
+  const status = getStatus(lastWalkAt, now)
+
+  function handleRowUpdated(id, field, value) {
+    setWalks((prev) => prev.map((w) => (w.id === id ? { ...w, [field]: value } : w)))
+  }
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>הטיולים של היום</Text>
+      <View style={styles.headerCard}>
+        <View style={styles.headerTextGroup}>
+          <Text style={styles.title}>הטיולים של היום</Text>
+          <Text style={styles.dateSubtitle}>{formatHebrewDate(now)}</Text>
+        </View>
+        <View style={styles.pawBadge}>
+          <Text style={styles.pawEmoji}>🐾</Text>
+        </View>
+      </View>
+
+      <View style={[styles.statusCard, styles[`statusCard_${status.tone}`]]}>
+        <Text style={styles.statusEmoji}>{status.emoji}</Text>
+        <Text style={[styles.statusText, styles[`statusText_${status.tone}`]]}>
+          {status.text}
+        </Text>
+      </View>
 
       {loading ? (
         <Text style={styles.message}>טוען…</Text>
@@ -51,23 +112,21 @@ export default function Home({ onAddWalk, onHistory }) {
           data={walks}
           keyExtractor={(walk) => walk.id}
           renderItem={({ item }) => (
-            <View style={styles.row}>
-              <Text style={styles.time}>{item.walk_time.slice(0, 5)}</Text>
-              <Text style={styles.nickname}>{item.users.nickname}</Text>
-              <Text style={styles.flags}>
-                {item.pooped ? '💩' : '—'} {item.peed ? '💧' : '—'}
-              </Text>
-            </View>
+            <WalkRow
+              walk={item}
+              isOwn={item.user_id === user.id}
+              onUpdated={handleRowUpdated}
+            />
           )}
         />
       )}
 
       <View style={styles.buttonRow}>
         <Pressable style={styles.historyButton} onPress={onHistory}>
-          <Text style={styles.historyButtonText}>היסטוריה</Text>
+          <Text style={styles.historyButtonText}>📜 היסטוריה</Text>
         </Pressable>
         <Pressable style={styles.addButton} onPress={onAddWalk}>
-          <Text style={styles.addButtonText}>הוספת טיול</Text>
+          <Text style={styles.addButtonText}>➕ הוספת טיול</Text>
         </Pressable>
       </View>
     </View>
@@ -79,13 +138,79 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     paddingTop: 60,
+    backgroundColor: '#fbf9ff',
+  },
+  headerCard: {
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#dce7f9',
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 20,
+  },
+  headerTextGroup: {
+    flex: 1,
   },
   title: {
-    fontSize: 28,
-    fontWeight: '600',
+    fontSize: 20,
+    fontWeight: '700',
     textAlign: 'right',
     writingDirection: 'rtl',
-    marginBottom: 16,
+    color: '#1f2f4d',
+  },
+  dateSubtitle: {
+    fontSize: 13,
+    textAlign: 'right',
+    writingDirection: 'rtl',
+    color: '#5a6b8c',
+    marginTop: 2,
+  },
+  pawBadge: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginStart: 12,
+  },
+  pawEmoji: {
+    fontSize: 20,
+  },
+  statusCard: {
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    gap: 10,
+    padding: 14,
+    borderRadius: 14,
+    marginBottom: 20,
+  },
+  statusCard_ok: {
+    backgroundColor: '#e3f6e8',
+  },
+  statusCard_soon: {
+    backgroundColor: '#fff2d9',
+  },
+  statusCard_urgent: {
+    backgroundColor: '#fde3e3',
+  },
+  statusEmoji: {
+    fontSize: 26,
+  },
+  statusText: {
+    fontSize: 18,
+    fontWeight: '600',
+    writingDirection: 'rtl',
+  },
+  statusText_ok: {
+    color: '#1e6b3a',
+  },
+  statusText_soon: {
+    color: '#8a5a00',
+  },
+  statusText_urgent: {
+    color: '#a3231f',
   },
   message: {
     textAlign: 'right',
@@ -98,28 +223,6 @@ const styles = StyleSheet.create({
   list: {
     width: '100%',
   },
-  row: {
-    flexDirection: 'row-reverse',
-    alignItems: 'center',
-    gap: 12,
-    padding: 12,
-    borderWidth: 1,
-    borderColor: '#e5e4e7',
-    borderRadius: 8,
-    marginBottom: 8,
-  },
-  time: {
-    fontVariant: ['tabular-nums'],
-    fontWeight: '500',
-  },
-  nickname: {
-    flex: 1,
-    textAlign: 'right',
-    writingDirection: 'rtl',
-  },
-  flags: {
-    fontSize: 18,
-  },
   buttonRow: {
     flexDirection: 'row-reverse',
     justifyContent: 'center',
@@ -128,24 +231,29 @@ const styles = StyleSheet.create({
   },
   addButton: {
     backgroundColor: '#aa3bff',
-    paddingVertical: 10,
+    paddingVertical: 12,
     paddingHorizontal: 24,
-    borderRadius: 6,
+    borderRadius: 24,
+    shadowColor: '#aa3bff',
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 3,
   },
   addButtonText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: '600',
   },
   historyButton: {
-    backgroundColor: '#f4f3ec',
-    paddingVertical: 10,
+    backgroundColor: '#f0ecf9',
+    paddingVertical: 12,
     paddingHorizontal: 24,
-    borderRadius: 6,
+    borderRadius: 24,
   },
   historyButtonText: {
-    color: '#333',
+    color: '#5a3d8a',
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: '600',
   },
 })

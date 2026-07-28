@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
-import { Pressable, SectionList, StyleSheet, Switch, Text, View } from 'react-native'
+import { Pressable, SectionList, StyleSheet, Text, View } from 'react-native'
 import { supabase } from '../lib/supabaseClient'
 import { todayString, formatDateForDisplay } from '../lib/date'
+import WalkRow from '../components/WalkRow'
 
 function groupByDate(rows) {
   const sections = []
@@ -29,7 +30,7 @@ export default function History({ user, onBack }) {
       setError('')
       const { data, error } = await supabase
         .from('walks')
-        .select('id, walk_date, walk_time, pooped, peed, user_id, users(nickname)')
+        .select('id, walk_date, walk_time, pooped, peed, note, user_id, users(nickname)')
         .lt('walk_date', todayString())
         .order('walk_date', { ascending: false })
         .order('walk_time', { ascending: true })
@@ -49,22 +50,21 @@ export default function History({ user, onBack }) {
     }
   }, [])
 
-  async function toggleFlag(walk, field, value) {
+  function handleRowUpdated(id, field, value) {
     setSections((prev) =>
       prev.map((section) => ({
         ...section,
-        data: section.data.map((w) => (w.id === walk.id ? { ...w, [field]: value } : w)),
+        data: section.data.map((w) => (w.id === id ? { ...w, [field]: value } : w)),
       }))
     )
-    await supabase.from('walks').update({ [field]: value }).eq('id', walk.id)
   }
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>היסטוריה</Text>
+        <Text style={styles.title}>📜 היסטוריה</Text>
         <Pressable onPress={onBack}>
-          <Text style={styles.backLink}>חזרה</Text>
+          <Text style={styles.backLink}>‹ חזרה</Text>
         </Pressable>
       </View>
 
@@ -80,35 +80,14 @@ export default function History({ user, onBack }) {
           sections={sections}
           keyExtractor={(item) => item.id}
           renderSectionHeader={({ section }) => (
-            <Text style={styles.sectionHeader}>{section.title}</Text>
+            <Text style={styles.sectionHeader}>📅 {section.title}</Text>
           )}
           renderItem={({ item }) => (
-            <View style={styles.row}>
-              {item.user_id === user.id ? (
-                <View style={styles.switchGroup}>
-                  <View style={styles.switchItem}>
-                    <Switch
-                      value={item.peed}
-                      onValueChange={(v) => toggleFlag(item, 'peed', v)}
-                    />
-                    <Text style={styles.switchLabel}>פיפי</Text>
-                  </View>
-                  <View style={styles.switchItem}>
-                    <Switch
-                      value={item.pooped}
-                      onValueChange={(v) => toggleFlag(item, 'pooped', v)}
-                    />
-                    <Text style={styles.switchLabel}>קקי</Text>
-                  </View>
-                </View>
-              ) : (
-                <Text style={styles.flags}>
-                  {item.pooped ? '💩' : '—'} {item.peed ? '💧' : '—'}
-                </Text>
-              )}
-              <Text style={styles.nickname}>{item.users.nickname}</Text>
-              <Text style={styles.time}>{item.walk_time.slice(0, 5)}</Text>
-            </View>
+            <WalkRow
+              walk={item}
+              isOwn={item.user_id === user.id}
+              onUpdated={handleRowUpdated}
+            />
           )}
         />
       )}
@@ -121,6 +100,7 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     paddingTop: 60,
+    backgroundColor: '#fbf9ff',
   },
   header: {
     flexDirection: 'row-reverse',
@@ -130,12 +110,14 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 28,
-    fontWeight: '600',
+    fontWeight: '700',
     textAlign: 'right',
     writingDirection: 'rtl',
+    color: '#2d1b4e',
   },
   backLink: {
     fontSize: 16,
+    fontWeight: '600',
     color: '#aa3bff',
     writingDirection: 'rtl',
   },
@@ -152,46 +134,11 @@ const styles = StyleSheet.create({
   },
   sectionHeader: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '700',
     textAlign: 'right',
     writingDirection: 'rtl',
-    marginTop: 12,
-    marginBottom: 6,
-    color: '#333',
-  },
-  row: {
-    flexDirection: 'row-reverse',
-    alignItems: 'center',
-    gap: 12,
-    padding: 12,
-    borderWidth: 1,
-    borderColor: '#e5e4e7',
-    borderRadius: 8,
+    marginTop: 14,
     marginBottom: 8,
-  },
-  time: {
-    fontVariant: ['tabular-nums'],
-    fontWeight: '500',
-  },
-  nickname: {
-    flex: 1,
-    textAlign: 'right',
-    writingDirection: 'rtl',
-  },
-  flags: {
-    fontSize: 18,
-  },
-  switchGroup: {
-    flexDirection: 'row-reverse',
-    gap: 10,
-  },
-  switchItem: {
-    flexDirection: 'row-reverse',
-    alignItems: 'center',
-    gap: 4,
-  },
-  switchLabel: {
-    fontSize: 13,
-    writingDirection: 'rtl',
+    color: '#5a3d8a',
   },
 })
