@@ -12,10 +12,8 @@
     "android": {
       "package": "com.amith372.stardewvallery",
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
-        "monochromeImage": "./assets/android-icon-monochrome.png"
+        "backgroundColor": "#0b1d3a",
+        "foregroundImage": "./assets/android-icon-foreground.png"
       }
     },
     "web": {
@@ -23,6 +21,11 @@
     },
     "plugins": [
       "@react-native-community/datetimepicker"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "880ee842-470a-48ab-8c20-5e3500e13665"
+      }
+    }
   }
 }
