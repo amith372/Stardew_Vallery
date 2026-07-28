@@ -3,6 +3,7 @@ import { StatusBar } from 'expo-status-bar'
 import { StyleSheet, View } from 'react-native'
 import NicknameEntry from './screens/NicknameEntry'
 import Home from './screens/Home'
+import AddWalk from './screens/AddWalk'
 import { getStoredUser, setStoredUser } from './lib/storage'
 
 export default function App() {
@@ -23,6 +24,11 @@ export default function App() {
     setUser(newUser)
   }
 
+  function handleWalkSaved() {
+    setRefreshKey((k) => k + 1)
+    setView('home')
+  }
+
   if (loading) {
     return <View style={styles.container} />
   }
@@ -40,7 +46,13 @@ export default function App() {
     <View style={styles.container}>
       {view === 'home' ? (
         <Home key={refreshKey} onAddWalk={() => setView('add')} />
-      ) : null}
+      ) : (
+        <AddWalk
+          user={user}
+          onSaved={handleWalkSaved}
+          onCancel={() => setView('home')}
+        />
+      )}
       <StatusBar style="auto" />
     </View>
   )
