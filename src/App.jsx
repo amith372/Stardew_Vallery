@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import './App.css'
 import NicknameEntry from './NicknameEntry'
+import Home from './Home'
 import { getStoredUser, setStoredUser } from './storage'
 
 function App() {
@@ -21,8 +22,7 @@ function App() {
 
   return (
     <main>
-      <h1>Dog Walk Log</h1>
-      <p>Signed in as {user.nickname}. Home screen coming next.</p>
+      <Home />
     </main>
   )
 }
