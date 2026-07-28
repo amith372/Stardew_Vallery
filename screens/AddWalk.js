@@ -53,12 +53,12 @@ export default function AddWalk({ user, onSaved, onCancel }) {
 
       <View style={styles.toggleRow}>
         <Switch value={pooped} onValueChange={setPooped} />
-        <Text style={styles.toggleLabel}>עשה קקי</Text>
+        <Text style={styles.toggleLabel}>עשתה קקי</Text>
       </View>
 
       <View style={styles.toggleRow}>
         <Switch value={peed} onValueChange={setPeed} />
-        <Text style={styles.toggleLabel}>עשה פיפי</Text>
+        <Text style={styles.toggleLabel}>עשתה פיפי</Text>
       </View>
 
       <View style={styles.buttonRow}>
