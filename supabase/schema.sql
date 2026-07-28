@@ -26,3 +26,7 @@ create policy "anyone can add users" on users for insert with check (true);
 create policy "anyone can read walks" on walks for select using (true);
 create policy "anyone can add walks" on walks for insert with check (true);
 create policy "anyone can update walks" on walks for update using (true);
+
+-- RLS policies only take effect once the role also has base table privileges.
+grant select, insert, update on users to anon, authenticated;
+grant select, insert, update on walks to anon, authenticated;
