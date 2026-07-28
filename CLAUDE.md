@@ -27,10 +27,11 @@ A "user" is just a nickname saved on first launch. No auth, no passwords.
 1. First launch: ask for nickname, save it.
 2. Home: today's walks (shown first on open).
 3. Add walk: pick time, toggle pooped / peed, save.
-4. History: browse past days (read-only).
+4. History: browse past days. Anyone can view all days; the person who
+   originally logged a walk can also edit that entry's pooped/peed toggles.
 
 ## Stack
-- Front end: [React + Vite]
+- Front end: React Native (Expo), UI in Hebrew with RTL layout
 - Data storage: supabase
 
 ## Don't
