@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Pressable, StyleSheet, Switch, Text, View } from 'react-native'
-import DateTimePicker from '@react-native-community/datetimepicker'
+import { DateTimePickerAndroid } from '@react-native-community/datetimepicker'
 import { supabase } from '../lib/supabaseClient'
 import { todayString } from '../lib/date'
 
@@ -16,6 +16,17 @@ export default function AddWalk({ user, onSaved, onCancel }) {
   const [peed, setPeed] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+
+  function openTimePicker() {
+    DateTimePickerAndroid.open({
+      value: time,
+      mode: 'time',
+      is24Hour: true,
+      onChange: (_, selected) => {
+        if (selected) setTime(selected)
+      },
+    })
+  }
 
   async function handleSave() {
     setSaving(true)
@@ -44,12 +55,9 @@ export default function AddWalk({ user, onSaved, onCancel }) {
       <Text style={styles.title}>הוספת טיול</Text>
 
       <Text style={styles.label}>שעה</Text>
-      <DateTimePicker
-        value={time}
-        mode="time"
-        display="default"
-        onChange={(_, selected) => selected && setTime(selected)}
-      />
+      <Pressable style={styles.timeButton} onPress={openTimePicker}>
+        <Text style={styles.timeButtonText}>{timeToString(time)}</Text>
+      </Pressable>
 
       <View style={styles.toggleRow}>
         <Switch value={pooped} onValueChange={setPooped} />
@@ -105,6 +113,19 @@ const styles = StyleSheet.create({
     writingDirection: 'rtl',
     alignSelf: 'stretch',
     marginBottom: 4,
+  },
+  timeButton: {
+    alignSelf: 'stretch',
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 6,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+  },
+  timeButtonText: {
+    fontSize: 18,
+    fontVariant: ['tabular-nums'],
+    textAlign: 'right',
   },
   toggleRow: {
     flexDirection: 'row-reverse',
